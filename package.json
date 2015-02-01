@@ -1,0 +1,23 @@
+{
+  "name": "github-api",
+  "version": "0.0.1",
+  "description": "little nodejs interface for GitHub API (WIP)",
+  "main": "src/githubapi.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RonanDrouglazet/github-api.git"
+  },
+  "keywords": [
+    "github",
+    "api",
+    "git"
+  ],
+  "author": "RonanDrouglazet",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RonanDrouglazet/github-api/issues"
+  }
+}
