@@ -249,6 +249,7 @@ var loopPollForRepoEvent = function(accessToken, owner, repo) {
  * @param owner repo's owner
  * @param repo repository
  * @param eventName GitHub event (githubapi.EVENTS)
+ * @param handler(object_event)
  * @see https://developer.github.com/v3/activity/events/#list-repository-events
  */
 exports.addEventOnRepo = function(accessToken, owner, repo, eventName, handler) {
