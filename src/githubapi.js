@@ -141,6 +141,17 @@ exports.getUser = function(userToken, done) {
 }
 
 /**
+ * @method getRepos return the user authenticated info objet
+ * @param userToken user's access token get by oauth
+ * @param type can be all, owner, public, private, member
+ * @param done(user_authenticated_repos_object)
+ * @see https://developer.github.com/v3/repos/#list-your-repositories
+ */
+exports.getRepos = function(userToken, type, done) {
+    exports.gitHubApiRequest(userToken, "GET", "/user/repos?sort=created&type=" + type, null, null, done);
+}
+
+/**
  * @method doesIssueExist check if issue already exist on repo
  * @param accessToken user's access token get by oauth
  * @param owner repo's owner
@@ -288,8 +299,7 @@ var sendResponseForOAuth = function(req, res, done) {
             dataObject = querystring.parse(chunk.toString());
             if (dataObject.access_token) {
                 access_token = dataObject.access_token;
-                res.signedCookies("git_access_token", access_token, {signed: true});
-                done(access_token);
+                done(req, res, access_token);
             }
         });
     });
@@ -300,7 +310,7 @@ var sendResponseForOAuth = function(req, res, done) {
         res.send();
     });
 
-    gitResponse.write("client_id=" + appId + "&client_secret=" + appSecret + "&code=" + req.param("code"));
+    gitResponse.write("client_id=" + appId + "&client_secret=" + appSecret + "&code=" + req.query.code);
     gitResponse.end();
 }
 
@@ -311,16 +321,15 @@ var sendResponseForOAuth = function(req, res, done) {
  * @param done(github_access_token)
  * @see https://developer.github.com/v3/oauth/
  */
-exports.oauth = function(req, res, done) {
-    if (!appId || !appRedirect || !appSecret) {
-        console.error("githubapi: (oauth) miss app infos, call init function(app_id, app_secret, app_redirect) before");
-    } else {
-        if (!req.signedCookies.git_access_token && !req.param("code")) {
+exports.oauth = function(done) {
+    return function(req, res) {
+        if (!appId || !appRedirect || !appSecret) {
+            console.error("githubapi: (oauth) miss app infos, call init function(app_id, app_secret, app_redirect) before");
+            res.send();
+        } else if (!req.query.code) {
             res.redirect("https://github.com/login/oauth/authorize?redirect_uri=" + appRedirect + req.path + "&scope=repo&client_id=" + appId + "&state=" + Date.now());
-        } else if (req.param("code")) {
+        } else if (req.query.code) {
             sendResponseForOAuth(req, res, done);
-        } else if (req.signedCookies.git_access_token) {
-            done(req.signedCookies.git_access_token);
         }
     }
 }
