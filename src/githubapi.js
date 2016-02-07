@@ -321,13 +321,13 @@ var sendResponseForOAuth = function(req, res, done) {
  * @param done(github_access_token)
  * @see https://developer.github.com/v3/oauth/
  */
-exports.oauth = function(done) {
+exports.oauth = function(done, scope) {
     return function(req, res) {
         if (!appId || !appRedirect || !appSecret) {
             console.error("githubapi: (oauth) miss app infos, call init function(app_id, app_secret, app_redirect) before");
             res.send();
         } else if (!req.query.code) {
-            res.redirect("https://github.com/login/oauth/authorize?redirect_uri=" + appRedirect + req.path + "&scope=repo&client_id=" + appId + "&state=" + Date.now());
+            res.redirect("https://github.com/login/oauth/authorize?redirect_uri=" + appRedirect + req.path + "&scope=" + scope + "&client_id=" + appId + "&state=" + Date.now());
         } else if (req.query.code) {
             sendResponseForOAuth(req, res, done);
         }
