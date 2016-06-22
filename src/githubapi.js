@@ -1,6 +1,8 @@
 var https = require('https'),
+btoa = require('btoa'),
+atob = require('atob'),
 querystring = require('querystring'),
-appId, appSecret, appRedirect,
+conf = {},
 eventHandlers = {},
 pollOngoing = {};
 
@@ -293,6 +295,7 @@ var sendResponseForOAuth = function(req, res, done) {
         path: "/login/oauth/access_token",
         method: "POST"
     };
+    var host = atob(req.query.state);
 
     var gitResponse = https.request(options, function(resG) {
         resG.on("data", function (chunk) {
@@ -310,7 +313,7 @@ var sendResponseForOAuth = function(req, res, done) {
         res.send();
     });
 
-    gitResponse.write("client_id=" + appId + "&client_secret=" + appSecret + "&code=" + req.query.code);
+    gitResponse.write("client_id=" + conf[host].id + "&client_secret=" + conf[host].secret + "&code=" + req.query.code + "&state=" + req.query.state);
     gitResponse.end();
 }
 
@@ -323,11 +326,11 @@ var sendResponseForOAuth = function(req, res, done) {
  */
 exports.oauth = function(done, scope) {
     return function(req, res) {
-        if (!appId || !appRedirect || !appSecret) {
-            console.error("githubapi: (oauth) miss app infos, call init function(app_id, app_secret, app_redirect) before");
+        if (!conf[req.hostname]) {
+            console.error("githubapi: (oauth) miss app infos, call init(domain, app_id, app_secret, app_redirect) before");
             res.send();
         } else if (!req.query.code) {
-            res.redirect("https://github.com/login/oauth/authorize?redirect_uri=" + appRedirect + req.path + "&scope=" + scope + "&client_id=" + appId + "&state=" + Date.now());
+            res.redirect("https://github.com/login/oauth/authorize?redirect_uri=" + conf[req.hostname].redirect + req.path + "&scope=" + scope + "&client_id=" + conf[req.hostname].id + "&state=" + btoa(req.hostname));
         } else if (req.query.code) {
             sendResponseForOAuth(req, res, done);
         }
@@ -341,12 +344,14 @@ exports.oauth = function(done, scope) {
  * @param app_redirect
  * @see https://github.com/settings/applications
  */
-exports.init = function(app_id, app_secret, app_redirect) {
-    if (arguments.length !== 3) {
+exports.init = function(domain, app_id, app_secret, app_redirect) {
+    if (arguments.length !== 4) {
         console.error("githubapi: (init) missing arguments");
     } else {
-        appId = app_id;
-        appSecret = app_secret;
-        appRedirect = app_redirect;
+        conf[domain] = {
+            id: app_id,
+            secret: app_secret,
+            redirect: app_redirect
+        };
     }
 }
