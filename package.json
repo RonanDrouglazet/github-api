@@ -1,6 +1,6 @@
 {
   "name": "github-api",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "little nodejs interface for GitHub API (WIP)",
   "main": "src/githubapi.js",
   "scripts": {

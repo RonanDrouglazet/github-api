@@ -326,11 +326,12 @@ var sendResponseForOAuth = function(req, res, done) {
  */
 exports.oauth = function(done, scope) {
     return function(req, res) {
-        if (!conf[req.host]) {
+        var cname = req.protocol + '://' + req.host
+        if (!conf[cname]) {
             console.error("githubapi: (oauth) miss app infos, call init(domain, app_id, app_secret, app_redirect) before");
             res.send();
         } else if (!req.query.code) {
-            res.redirect("https://github.com/login/oauth/authorize?redirect_uri=" + conf[req.host].redirect + req.path + "&scope=" + scope + "&client_id=" + conf[req.host].id + "&state=" + btoa(req.host));
+            res.redirect("https://github.com/login/oauth/authorize?redirect_uri=" + conf[cname].redirect + req.path + "&scope=" + scope + "&client_id=" + conf[cname].id + "&state=" + btoa(cname));
         } else if (req.query.code) {
             sendResponseForOAuth(req, res, done);
         }
